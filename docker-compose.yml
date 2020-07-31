@@ -1,0 +1,96 @@
+version: '3'
+
+#env_file:
+#  - .env
+#env_file: .env
+
+
+networks:
+  frontend:
+    driver: ${NETWORKS_DRIVER}
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+volumes:
+  mysql:
+    driver: ${VOLUMES_DRIVER}
+  redis:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+ #### PHP-FPM ##############################################
+ #   php-fpm:
+ #     build:
+ #       context: ./php-fpm
+ #       args:
+ #         - CHANGE_SOURCE=${CHANGE_SOURCE}
+ #         - BASE_IMAGE_TAG_PREFIX=${PHP_FPM_BASE_IMAGE_TAG_PREFIX}
+ #         - LARADOCK_PHP_VERSION=${PHP_VERSION}
+ #         - LARADOCK_PHALCON_VERSION=${PHALCON_VERSION}
+ #         - INSTALL_BZ2=${PHP_FPM_INSTALL_BZ2}
+ #         - INSTALL_GMP=${PHP_FPM_INSTALL_GMP}
+ #         - INSTALL_XDEBUG=${PHP_FPM_INSTALL_XDEBUG}
+ #         - INSTALL_PCOV=${PHP_FPM_INSTALL_PCOV}
+ #         - INSTALL_PHPDBG=${PHP_FPM_INSTALL_PHPDBG}
+ #         - INSTALL_BLACKFIRE=${INSTALL_BLACKFIRE}
+ #         - INSTALL_SSH2=${PHP_FPM_INSTALL_SSH2}
+ #         - INSTALL_SOAP=${PHP_FPM_INSTALL_SOAP}
+ #         - INSTALL_XSL=${PHP_FPM_INSTALL_XSL}
+ #         - INSTALL_SMB=${PHP_FPM_INSTALL_SMB}
+ #         - INSTALL_IMAP=${PHP_FPM_INSTALL_IMAP}
+ #         - INSTALL_MONGO=${PHP_FPM_INSTALL_MONGO}
+ #         - INSTALL_AMQP=${PHP_FPM_INSTALL_AMQP}
+ #         - INSTALL_CASSANDRA=${PHP_FPM_INSTALL_CASSANDRA}
+ #       - FAKETIME=${PHP_FPM_FAKETIME}
+ #         #depends_on:
+ #         #- workspace
+ #     networks:
+ #       - backend
+ #     links:
+ #       - docker-in-docker
+ #
+### PHP Worker ############################################
+    php-worker:
+      build:
+        context: ./php-worker
+        args:
+          - CHANGE_SOURCE=${CHANGE_SOURCE}
+          - LARADOCK_PHP_VERSION=${PHP_VERSION}
+          - PHALCON_VERSION=${PHALCON_VERSION}
+          - INSTALL_BZ2=${PHP_WORKER_INSTALL_BZ2}
+          - INSTALL_GD=${PHP_WORKER_INSTALL_GD}
+          - INSTALL_GMP=${PHP_WORKER_INSTALL_GMP}
+          - INSTALL_PGSQL=${PHP_WORKER_INSTALL_PGSQL}
+          - INSTALL_BCMATH=${PHP_WORKER_INSTALL_BCMATH}
+          - INSTALL_PHALCON=${PHP_WORKER_INSTALL_PHALCON}
+          - INSTALL_SOAP=${PHP_WORKER_INSTALL_SOAP}
+          - INSTALL_ZIP_ARCHIVE=${PHP_WORKER_INSTALL_ZIP_ARCHIVE}
+          - INSTALL_MYSQL_CLIENT=${PHP_WORKER_INSTALL_MYSQL_CLIENT}
+          - INSTALL_AMQP=${PHP_WORKER_INSTALL_AMQP}
+          - INSTALL_CASSANDRA=${PHP_WORKER_INSTALL_CASSANDRA}
+          - INSTALL_GEARMAN=${PHP_WORKER_INSTALL_GEARMAN}
+          - INSTALL_GHOSTSCRIPT=${PHP_WORKER_INSTALL_GHOSTSCRIPT}
+          - INSTALL_SWOOLE=${PHP_WORKER_INSTALL_SWOOLE}
+          - INSTALL_TAINT=${PHP_WORKER_INSTALL_TAINT}
+          - INSTALL_FFMPEG=${PHP_WORKER_INSTALL_FFMPEG}
+          - INSTALL_REDIS=${PHP_WORKER_INSTALL_REDIS}
+          - PUID=${PHP_WORKER_PUID}
+          - PGID=${PHP_WORKER_PGID}
+      volumes:
+        - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+        - ./php-worker/supervisord.d:/etc/supervisord.d
+          #depends_on:
+          #- workspace
+      ports:
+        - "${PHP_SWOOLE_PORT}:9501"
+        - "6500:6500"
+        - "6501:6501"
+        - "9001:9001"
+          
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      networks:
+        - backend
+
+      # restart: always
